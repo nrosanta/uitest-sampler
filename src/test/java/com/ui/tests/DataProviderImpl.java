@@ -5,17 +5,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.testng.ITestContext;
 import org.testng.annotations.DataProvider;
 
 public class DataProviderImpl {
+	String filename="src/test/resources/test-data/TestData.xlsx";
+	String sheetName="Links";//default sheet
 	@DataProvider(name="common-test-data")
-	public Object[][] dataProviderMethod(){
-		String filename="src/test/resources/test-data/TestData.xlsx";
-		String sheetName="Links";
+	public Object[][] dataProviderMethod(ITestContext testContext){
+
 		XSSFSheet excelWSheet = null;
 		XSSFWorkbook excelWBook;
+		//System.out.println("context attributes*** "+testContext.getAttribute("sheetName").toString());
+		sheetName = testContext.getAttribute("sheetName").toString();
 	
 		try {
 			FileInputStream excel = new FileInputStream(filename);
@@ -26,10 +31,7 @@ public class DataProviderImpl {
 			e.printStackTrace();
 		}
 		
-		Object[][] obj = new Object[1][1];
-		obj[0][0] = getData(excelWSheet);
-		
-		return obj;
+		return new Object[][] {{getData(excelWSheet)}};
 		
 	}
 	
@@ -39,30 +41,28 @@ public class DataProviderImpl {
 		Map<String, Map<String, String>> dataMap = new HashMap<>();
 		List<String> headers = new ArrayList<>();
 		
-		/*
-		 * Get top rows
-		 */
-		for(int i=0;i<colHeaderCount;i++) {
-			headers.add(worksheet.getRow(0).getCell(i).getStringCellValue());
-		}
-		
-		System.out.println("Headers: "+headers);
-		
-		/*
-		 * Get row data
-		 */
-		//Iterator<Row> rowItr = worksheet.rowIterator();
-		for(int i=1;i<rowCount;i++) { //skip 1st row
-			//XSSFRow row = (XSSFRow) rowItr.next();
-			Map<String, String> rowMap = new HashMap<>();
-			for(int j=0;j<headers.size();j++) {
-				String cellVal = worksheet.getRow(i).getCell(j).getStringCellValue();
-				//System.out.println("Data: "+cellVal);
-				rowMap.put(headers.get(j), cellVal);
-				
+		try {
+			/*
+			 * Get top rows
+			 */
+			for(int i=0;i<colHeaderCount;i++) {
+				headers.add(worksheet.getRow(0).getCell(i).getStringCellValue());
 			}
-			dataMap.put(worksheet.getRow(i).getCell(0).getStringCellValue(), rowMap);
 			
+			
+			/*
+			 * Get row data
+			 */
+			for(int i=1;i<rowCount;i++) { //skip 1st row
+				Map<String, String> rowMap = new HashMap<>();
+				for(int j=0;j<headers.size();j++) {
+					String cellVal = worksheet.getRow(i).getCell(j)==null?"":worksheet.getRow(i).getCell(j).getStringCellValue();
+					rowMap.put(headers.get(j), cellVal);
+				}
+				dataMap.put(worksheet.getRow(i).getCell(0).getStringCellValue(), rowMap);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return dataMap;
 		
