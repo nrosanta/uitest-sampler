@@ -11,8 +11,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.testng.ITestContext;
 import org.testng.annotations.DataProvider;
 
+import com.ui.utils.Config;
+
 public class DataProviderImpl {
-	String filename="src/test/resources/test-data/TestData.xlsx";
+	String filename=Config.getProp("testfile-path");
 	String sheetName="Links";//default sheet
 	@DataProvider(name="common-test-data")
 	public Object[][] dataProviderMethod(ITestContext testContext){
